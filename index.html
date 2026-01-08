@@ -5,8 +5,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tunti – Web Prototype (Multiplayer)</title>
+
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css" />
-  <!-- Firebase CDN (Modular v9+) -->
+
+  <!-- Firebase CDN (Online Mode အတွက်သာ; Offline စမ်းသပ်လို့ရ) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
@@ -18,6 +21,7 @@
   </header>
 
   <main class="layout">
+    <!-- Left Panel (Multiplayer & Data + Actions) -->
     <section class="left">
       <div class="panel">
         <h3>Multiplayer & Data</h3>
@@ -32,6 +36,10 @@
             <button id="createRoom" class="btn">🟢 Create Room</button>
             <button id="joinRoom" class="btn">🔗 Join Room</button>
             <button id="leaveRoom" class="btn danger">🚪 Leave</button>
+          </div>
+          <div class="grid-buttons">
+            <button id="takeP0" class="btn">🎮 Take Player 0 (မြန်မာ)</button>
+            <button id="takeP1" class="btn">🎮 Take Player 1 (ထိုင်း)</button>
           </div>
           <div id="connStatus" class="muted">Status: Offline</div>
           <div id="roleInfo" class="muted">Role: —</div>
@@ -62,7 +70,6 @@
           <button class="btn" data-build="barracks">⚔️ Barracks</button>
           <button class="btn" data-build="port">⚓ Port</button>
         </div>
-        <small>💡 Port သည် ရေတန်ဖိုးရှိ Tile တွင်သာတည်ဆောက်နိုင်သည်။</small>
 
         <h4>စစ်သားအင်အား (Train)</h4>
         <div class="grid-buttons">
@@ -71,38 +78,20 @@
           <button class="btn" data-train="cavalry">🐎 Cavalry</button>
           <button class="btn" data-train="ship">⛵ Ship</button>
         </div>
-        <small>🏯 Barracks/⚓ Port တွင်သာ သင်ကြားနိုင်သည်။</small>
-
-        <h4>ရွေ့လျား/တိုက်ခိုက်</h4>
-        <p>
-          ၁) စစ်သားပါရှိသော Tile ကို နှိပ်ရွေးပါ<br/>
-          ၂) သွားချင်သော အနီးအနား Tile ကို နှိပ်ပါ<br/>
-          ၃) ရန်သူကို နှိပ်လျှင် တိုက်ခိုက်မည်<br/>
-        </p>
 
         <div class="actions">
           <button id="endTurn" class="btn primary">🔁 End Turn</button>
           <button id="resetGame" class="btn danger">♻️ Reset</button>
         </div>
-
-        <details class="help">
-          <summary>ℹ️ Gameplay စည်းမျဉ်းအကျဉ်းချုပ်</summary>
-          <ul>
-            <li>🌾 Farm = Rice ထုတ်လုပ်မှုတိုး</li>
-            <li>🪵 Lumber = Timber ထုတ်လုပ်မှုတိုး</li>
-            <li>🛍️ Market = Gold & Spices တိုး</li>
-            <li>⚔️ Barracks = Land Units သင်ကြား</li>
-            <li>⚓ Port = Sea Units သင်ကြား</li>
-            <li>🏁 အနိုင်ယူရန်: ရန်သူ Capital HP ကို 0 သို့လျှော့ချပါ</li>
-          </ul>
-        </details>
       </div>
     </section>
 
+    <!-- Map -->
     <section class="map-wrapper">
       <div id="map" class="map"></div>
     </section>
 
+    <!-- Right Panel -->
     <section class="right">
       <div class="panel">
         <h3>နိုင်ငံအချက်အလက်</h3>
@@ -113,18 +102,19 @@
         <hr/>
         <h4>Dev Notes</h4>
         <ul>
-          <li>Map ကို Room Code ဖြင့် seed လုပ်ထား၍ Online/Offline ထပ်တူတူ</li>
-          <li>Online turn-lock: ကိုယ့်တစ်ဝှမ်းမဟုတ်လျှင် action မလုပ်နိုင်</li>
-          <li>Firebase ကို Settings → Rules မှာ read/write ကို room အသေချာထားပါ</li>
+          <li>Seeded map (Room Code အတိုင်း)</li>
+          <li>Turn-lock: Online ဖြစ်မှ အလုပ်လုပ်</li>
+          <li>Offline: Hot-seat အနေဖြင့် လုပ်ဆောင်နိုင်</li>
         </ul>
       </div>
     </section>
   </main>
 
   <footer class="foot">
-    <small>© Tunti Prototype. Theme: Southeast Asia (1715–1856). Build v0.2 (Multiplayer+Data)</small>
+    <small>© Tunti Prototype. Theme: Southeast Asia (1715–1856). Build v0.2</small>
   </footer>
 
-  <script defer src="main.js"></script>
+  <!-- JS -->
+  <script src="main.js"></script>
 </body>
 </html>
