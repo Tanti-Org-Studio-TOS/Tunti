@@ -4,8 +4,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tunti – Web Prototype</title>
+  <title>Tunti – Web Prototype (Multiplayer)</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Firebase CDN (Modular v9+) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
   <header class="topbar">
@@ -17,6 +20,34 @@
   <main class="layout">
     <section class="left">
       <div class="panel">
+        <h3>Multiplayer & Data</h3>
+        <div class="selected" id="mpPanel">
+          <label>Player Name
+            <input id="playerName" class="text" placeholder="သင်၏အမည်" />
+          </label>
+          <label>Room Code
+            <input id="roomCode" class="text" placeholder="ဥပမာ: tunti-001" />
+          </label>
+          <div class="grid-buttons">
+            <button id="createRoom" class="btn">🟢 Create Room</button>
+            <button id="joinRoom" class="btn">🔗 Join Room</button>
+            <button id="leaveRoom" class="btn danger">🚪 Leave</button>
+          </div>
+          <div id="connStatus" class="muted">Status: Offline</div>
+          <div id="roleInfo" class="muted">Role: —</div>
+        </div>
+
+        <h4>Data (Save/Load)</h4>
+        <div class="grid-buttons">
+          <button id="saveLocal" class="btn">💾 Save (LocalStorage)</button>
+          <button id="loadLocal" class="btn">📥 Load (LocalStorage)</button>
+          <button id="exportJSON" class="btn">⬇️ Export JSON</button>
+          <label class="btn">
+            ⬆️ Import JSON
+            <input id="importJSON" type="file" accept="application/json" style="display:none" />
+          </label>
+        </div>
+
         <h3>လုပ်ဆောင်ချက်များ</h3>
         <div class="selected">
           <div id="selectedTile">ရွေးထားသော Tile: မရှိသေး</div>
@@ -31,7 +62,7 @@
           <button class="btn" data-build="barracks">⚔️ Barracks</button>
           <button class="btn" data-build="port">⚓ Port</button>
         </div>
-        <small>💡 သတိပြု: Port သည် ရေတစ်လှည့်အနီးတွင်သာ တည်ဆောက်နိုင်သည်။</small>
+        <small>💡 Port သည် ရေတန်ဖိုးရှိ Tile တွင်သာတည်ဆောက်နိုင်သည်။</small>
 
         <h4>စစ်သားအင်အား (Train)</h4>
         <div class="grid-buttons">
@@ -40,13 +71,13 @@
           <button class="btn" data-train="cavalry">🐎 Cavalry</button>
           <button class="btn" data-train="ship">⛵ Ship</button>
         </div>
-        <small>🏯 Barracks (သို့) ⚓ Port တွင်သာ စစ်သား/နှင့်ရေယာဉ် သင်ကြားနိုင်သည်။</small>
+        <small>🏯 Barracks/⚓ Port တွင်သာ သင်ကြားနိုင်သည်။</small>
 
         <h4>ရွေ့လျား/တိုက်ခိုက်</h4>
         <p>
           ၁) စစ်သားပါရှိသော Tile ကို နှိပ်ရွေးပါ<br/>
-          ၂) သွားချင်သော အနီးအနား Tile ကို နှိပ်ပါ (တားကွမရှိလျှင် ရွေ့လျားမည်)<br/>
-          ၃) ရန်သူ စစ်သား/မြို့ရှိနေရာကို ရွေးလျှင် တိုက်ခိုက်မည်
+          ၂) သွားချင်သော အနီးအနား Tile ကို နှိပ်ပါ<br/>
+          ၃) ရန်သူကို နှိပ်လျှင် တိုက်ခိုက်မည်<br/>
         </p>
 
         <div class="actions">
@@ -57,12 +88,12 @@
         <details class="help">
           <summary>ℹ️ Gameplay စည်းမျဉ်းအကျဉ်းချုပ်</summary>
           <ul>
-            <li>ဖားမ် 🌾 = Rice ထုတ်လုပ်မှုတိုး</li>
-            <li>လမ်ဘာ 🪵 = Timber ထုတ်လုပ်မှုတိုး</li>
-            <li>မာကက် 🛍️ = Gold & Spices စီးပွားရေးတိုး</li>
-            <li>ဘရာ့ရက် ⚔️ = စစ်သား သင်ကြားရုံး</li>
-            <li>ပေါ့တ် ⚓ = ရေယာဉ် သင်ကြားရန်</li>
-            <li>အနိုင်ယူရန်: ရန်သူ Capital ကို ဖိနှိပ်၍ HP ကို 0 အထိ လျှော့ချပါ</li>
+            <li>🌾 Farm = Rice ထုတ်လုပ်မှုတိုး</li>
+            <li>🪵 Lumber = Timber ထုတ်လုပ်မှုတိုး</li>
+            <li>🛍️ Market = Gold & Spices တိုး</li>
+            <li>⚔️ Barracks = Land Units သင်ကြား</li>
+            <li>⚓ Port = Sea Units သင်ကြား</li>
+            <li>🏁 အနိုင်ယူရန်: ရန်သူ Capital HP ကို 0 သို့လျှော့ချပါ</li>
           </ul>
         </details>
       </div>
@@ -80,20 +111,20 @@
         <h4>ထုတ်လုပ်မှု (Per Turn)</h4>
         <div id="productionInfo"></div>
         <hr/>
-        <h4>ပြန်လည်စီမံ (Dev Notes)</h4>
+        <h4>Dev Notes</h4>
         <ul>
-          <li>Mobile ကို အဆင်ပြေစေရန် UI ကို ကြီးထပ်ထားသည်</li>
-          <li>Multiplayer (Hot-seat) ကို အချိန်မီ ထည့်သွင်းမည်</li>
-          <li>AI သည် ဗားရှင်း ဒီဇိုင်းအဆင့် (Basic) ဖြစ်သည်</li>
+          <li>Map ကို Room Code ဖြင့် seed လုပ်ထား၍ Online/Offline ထပ်တူတူ</li>
+          <li>Online turn-lock: ကိုယ့်တစ်ဝှမ်းမဟုတ်လျှင် action မလုပ်နိုင်</li>
+          <li>Firebase ကို Settings → Rules မှာ read/write ကို room အသေချာထားပါ</li>
         </ul>
       </div>
     </section>
   </main>
 
   <footer class="foot">
-    <small>© Tunti Prototype. Theme: Southeast Asia (1715–1856). Build v0.1</small>
+    <small>© Tunti Prototype. Theme: Southeast Asia (1715–1856). Build v0.2 (Multiplayer+Data)</small>
   </footer>
 
-  <script src="main.js"></script>
+  <script defer src="main.js"></script>
 </body>
 </html>
