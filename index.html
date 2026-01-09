@@ -4,16 +4,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tunti – Web Prototype (Multiplayer)</title>
-
-  <!-- CSS -->
+  <title>Tunti – Web Prototype (Offline Multiplayer + AI + Map Editor)</title>
   <link rel="stylesheet" href="style.css" />
-
-  <!-- Firebase CDN (Online Mode အတွက်သာ; Offline စမ်းသပ်လို့ရ) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
+  <noscript>⚠️ ဤဂိမ်းကို အသုံးပြုရန် JavaScript ကို ဖွင့်ထားရန်လိုအပ်ပါသည်။</noscript>
+
+  <!-- Top Bar -->
   <header class="topbar">
     <div class="brand">Tunti – သမိုင်းအခြေခံ Strategy (Prototype)</div>
     <div id="turnInfo" class="turn">လက်ရှိတစ်ဝှမ်း: —</div>
@@ -21,48 +18,67 @@
   </header>
 
   <main class="layout">
-    <!-- Left Panel (Multiplayer & Data + Actions) -->
+    <!-- Left Panel -->
     <section class="left">
       <div class="panel">
-        <h3>Multiplayer & Data</h3>
-        <div class="selected" id="mpPanel">
-          <label>Player Name
-            <input id="playerName" class="text" placeholder="သင်၏အမည်" />
+        <!-- Hot-seat / AI Controls -->
+        <h3>🎮 Offline Multiplayer (Hot‑seat) & 🤖 AI</h3>
+        <div class="grid-buttons" style="margin-bottom:8px;">
+          <button id="takeP0" class="btn">🎮 Take Player 0 (မြန်မာ)</button>
+          <button id="takeP1" class="btn">🎮 Take Player 1 (ထိုင်း)</button>
+        </div>
+        <p class="muted">
+          Default အဖြစ် Player 1 သည် 🤖 AI ဖြစ်သည်။ အထက်က Button မနှိပ်လျှင် Hot‑seat အနေဖြင့် Player 0 သာ Human ဖြစ်သည်။
+        </p>
+
+        <!-- Map Editor Controls -->
+        <h3>🛠️ Map Editor</h3>
+        <div class="grid-buttons" style="margin-bottom:8px;">
+          <button id="toggleEditor" class="btn">🛠️ Toggle Editor</button>
+          <button class="btn" onclick="setEditorPaint('plains')">🟩 Plains</button>
+          <button class="btn" onclick="setEditorPaint('forest')">🌲 Forest</button>
+          <button class="btn" onclick="setEditorPaint('mountain')">⛰️ Mountain</button>
+          <button class="btn" onclick="setEditorPaint('water')">🌊 Water</button>
+          <button class="btn" onclick="setEditorPaint('city')">🏛️ City</button>
+          <button class="btn" onclick="swapEditorOwner()">🔄 City Owner ပြောင်း</button>
+        </div>
+        <p class="muted">
+          Editor ON ဖြစ်နေချိန်—Tile ကိုနှိပ်၍ Paint လုပ်ပါ။ City Owner ပြောင်းရန် (City Tile) ကို Right‑click လုပ်နိုင်သည်။  
+          ကီးဘုတ် (1..5) = Plains/Forest/Mountain/Water/City၊ (O) = Owner ပြောင်း။
+        </p>
+
+        <!-- Map Save/Load / Export/Import -->
+        <h4>🗺️ Map Data (Save/Load/Export/Import)</h4>
+        <div class="grid-buttons" style="margin-bottom:8px;">
+          <button id="saveMap" class="btn">💾 Save Map (LocalStorage)</button>
+          <button id="loadMap" class="btn">📥 Load Map (LocalStorage)</button>
+          <button id="exportMap" class="btn">⬇️ Export Map JSON</button>
+          <label class="btn">
+            ⬆️ Import Map JSON
+            <input id="importMap" type="file" accept="application/json" style="display:none" />
           </label>
-          <label>Room Code
-            <input id="roomCode" class="text" placeholder="ဥပမာ: tunti-001" />
-          </label>
-          <div class="grid-buttons">
-            <button id="createRoom" class="btn">🟢 Create Room</button>
-            <button id="joinRoom" class="btn">🔗 Join Room</button>
-            <button id="leaveRoom" class="btn danger">🚪 Leave</button>
-          </div>
-          <div class="grid-buttons">
-            <button id="takeP0" class="btn">🎮 Take Player 0 (မြန်မာ)</button>
-            <button id="takeP1" class="btn">🎮 Take Player 1 (ထိုင်း)</button>
-          </div>
-          <div id="connStatus" class="muted">Status: Offline</div>
-          <div id="roleInfo" class="muted">Role: —</div>
         </div>
 
-        <h4>Data (Save/Load)</h4>
-        <div class="grid-buttons">
-          <button id="saveLocal" class="btn">💾 Save (LocalStorage)</button>
-          <button id="loadLocal" class="btn">📥 Load (LocalStorage)</button>
-          <button id="exportJSON" class="btn">⬇️ Export JSON</button>
+        <!-- Game Save/Load / Export/Import -->
+        <h4>💾 Game Data (Save/Load/Export/Import)</h4>
+        <div class="grid-buttons" style="margin-bottom:8px;">
+          <button id="saveLocal" class="btn">💾 Save Game (LocalStorage)</button>
+          <button id="loadLocal" class="btn">📥 Load Game (LocalStorage)</button>
+          <button id="exportJSON" class="btn">⬇️ Export Game JSON</button>
           <label class="btn">
-            ⬆️ Import JSON
+            ⬆️ Import Game JSON
             <input id="importJSON" type="file" accept="application/json" style="display:none" />
           </label>
         </div>
 
-        <h3>လုပ်ဆောင်ချက်များ</h3>
+        <!-- Selection Info -->
         <div class="selected">
           <div id="selectedTile">ရွေးထားသော Tile: မရှိသေး</div>
           <div id="selectedUnit">ရွေးထားသော စစ်သား: မရှိသေး</div>
         </div>
 
-        <h4>တည်ဆောက်မှု (Build)</h4>
+        <!-- Build -->
+        <h4>🏗️ တည်ဆောက်မှု (Build)</h4>
         <div class="grid-buttons">
           <button class="btn" data-build="farm">🌾 Farm</button>
           <button class="btn" data-build="lumber">🪵 Lumber Camp</button>
@@ -70,19 +86,43 @@
           <button class="btn" data-build="barracks">⚔️ Barracks</button>
           <button class="btn" data-build="port">⚓ Port</button>
         </div>
+        <small class="muted">💡 Port သည် ရေတန်ဖိုးရှိ Tile တွင်သာ တည်ဆောက်နိုင်သည်။</small>
 
-        <h4>စစ်သားအင်အား (Train)</h4>
+        <!-- Train -->
+        <h4>⚔️ စစ်သားအင်အား (Train)</h4>
         <div class="grid-buttons">
           <button class="btn" data-train="infantry">🛡️ Infantry</button>
           <button class="btn" data-train="archer">🏹 Archer</button>
           <button class="btn" data-train="cavalry">🐎 Cavalry</button>
           <button class="btn" data-train="ship">⛵ Ship</button>
         </div>
+        <small class="muted">🏯 Barracks သို့မဟုတ် ⚓ Port တွင်သာ သင်ကြားနိုင်သည်။</small>
 
+        <!-- Movement/Attack help -->
+        <h4>🧭 ရွေ့လျား/တိုက်ခိုက်</h4>
+        <p class="muted">
+          ၁) စစ်သားပါရှိသော Tile ကို နှိပ်ရွေးပါ<br/>
+          ၂) သွားချင်သော အနီးအနား Tile ကို နှိပ်ပါ (တားကွ မရှိပါက ရွေ့မည်)<br/>
+          ၃) ရန်သူ စစ်သား/မြို့ရှိနေရာကို ရွေးလျှင် တိုက်ခိုက်မည်
+        </p>
+
+        <!-- Actions -->
         <div class="actions">
           <button id="endTurn" class="btn primary">🔁 End Turn</button>
           <button id="resetGame" class="btn danger">♻️ Reset</button>
         </div>
+
+        <details class="help">
+          <summary>ℹ️ Gameplay စည်းမျဉ်းအကျဉ်းချုပ်</summary>
+          <ul>
+            <li>🌾 Farm = Rice ထုတ်လုပ်မှုတိုး</li>
+            <li>🪵 Lumber = Timber ထုတ်လုပ်မှုတိုး</li>
+            <li>🛍️ Market = Gold & Spices တိုး</li>
+            <li>⚔️ Barracks = Land Units သင်ကြား</li>
+            <li>⚓ Port = Sea Units သင်ကြား</li>
+            <li>🏁 အနိုင်ယူရန်: ရန်သူ Capital HP ကို 0 သို့လျှော့ချပါ</li>
+          </ul>
+        </details>
       </div>
     </section>
 
@@ -102,19 +142,19 @@
         <hr/>
         <h4>Dev Notes</h4>
         <ul>
-          <li>Seeded map (Room Code အတိုင်း)</li>
-          <li>Turn-lock: Online ဖြစ်မှ အလုပ်လုပ်</li>
-          <li>Offline: Hot-seat အနေဖြင့် လုပ်ဆောင်နိုင်</li>
+          <li>Offline Hot‑seat အတွက် Turn‑flow</li>
+          <li>Player 1 default 🤖 AI (Difficulty: normal)</li>
+          <li>Map Editor: Paint/Owner/Save/Load/Export/Import</li>
         </ul>
       </div>
     </section>
   </main>
 
   <footer class="foot">
-    <small>© Tunti Prototype. Theme: Southeast Asia (1715–1856). Build v0.2</small>
+    <small>© Tunti Prototype. Theme: Southeast Asia (1715–1856). Build v0.3 (Offline+AI+Editor)</small>
   </footer>
 
-  <!-- JS -->
+  <!-- Game Logic -->
   <script src="main.js"></script>
 </body>
 </html>
